@@ -1,49 +1,50 @@
 import { useState, useEffect } from "react";
-import client from "../src/Utils/contentfulClient";
+import client from "../utils/contentfulClient";
 import { useParams } from "react-router-dom";
 
-// Custom hook til at hente artikler
 const useArticle = () => {
-    const { category } = useParams(); // Hent kategori fra URL
-    const [articles, setArticles] = useState([]); // State til artikler
-    const [filteredArticles, setFilteredArticles] = useState([]); // State til filtrerede artikler
-    const [error, setError] = useState(null); // State til fejl
+  const { category } = useParams();
+  const [articles, setArticles] = useState([]);
+  const [filteredArticles, setFilteredArticles] = useState([]);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        // Hent artikler fra Contentful
-        client.getEntries({ content_type: 'nyhedsArtikel' })
-            .then((data) => {
-                // Map data til artikel objekter
-                const fetchedArticles = data.items.map((item) => ({
-                    id: item.sys.id,
-                    title: item.fields.overskrift,
-                    publishDate: new Date(item.fields.udgivelsesdato).toLocaleDateString("da-DK"),
-                    author: item.fields.skribent,
-                    image: item.fields.artikelbillede?.fields.file.url || null,
-                    content: item.fields.indhold,
-                    category: item.fields.kategori,
-                    slug: item.fields.slug,
-                }));
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const data = await client.getEntries("nyhedsArtikel");
+        const fetchedArticles = data.items.map((item) => ({
+          id: item.sys.id,
+          title: item.fields.overskrift,
+          image: item.fields.artikelbillede?.fields.file.url
+            ? `https:${item.fields.artikelbillede.fields.file.url}`
+            : null,
+          content: item.fields.indhold,
+          slug: item.fields.slug,
+          category: item.fields.kategori || "",
+        }));
 
-                setArticles(fetchedArticles); // Opdater artikler state
-            })
-            .catch((error) => {
-                setError(error); // Opdater fejl state
-                console.error("Error fetching articles:", error); // Log fejl
-            });
-    }, []);
+        setArticles(fetchedArticles);
+      } catch (err) {
+        console.error("Error fetching articles:", err);
+        setError(err.message || "Unknown error");
+      }
+    };
 
-    useEffect(() => {
-        // Filtrer artikler baseret på kategori
-        if (category) {
-            const filtered = articles.filter(article => article.category.toLowerCase() === category.toLowerCase());
-            setFilteredArticles(filtered);
-        } else {
-            setFilteredArticles(articles);
-        }
-    }, [category, articles]);
+    fetchArticles();
+  }, []);
 
-    return { articles: filteredArticles, error }; // Returner filtrerede artikler og fejl
+  useEffect(() => {
+    if (category) {
+      const filtered = articles.filter(
+        (article) => article.category.toLowerCase() === category.toLowerCase()
+      );
+      setFilteredArticles(filtered);
+    } else {
+      setFilteredArticles(articles);
+    }
+  }, [category, articles]);
+
+  return { articles: filteredArticles, error };
 };
 
 export default useArticle;
