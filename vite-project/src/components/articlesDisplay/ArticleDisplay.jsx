@@ -16,24 +16,25 @@ const Article = () => {
   return (
     <ArticlesStyled>
       <div className="news-container">
-        {articles.map((article) => (
-          <NavLink
-            key={article.id}
-            to={`/article/${article.slug}`}
-            className="news-item"
-          >
-            {article.image && (
-              <img
-                className="news-image"
-                src={article.image}
-                alt={article.title}
-              />
-            )}
-            <div className="news-content">
-              <h2 className="news-title">{article.title}</h2>
-            </div>
-          </NavLink>
-        ))}
+        {articles.items.map((article) => (
+  <NavLink
+    key={article.sys.id}
+    to={`/article/${article.fields.slug}`}
+    className="news-item"
+  >
+    {article.fields.image?.fields?.file?.url && (
+      <img
+        src={article.fields.image.fields.file.url}
+        alt={article.fields.title}
+        className="news-image"
+      />
+    )}
+    <div className="news-content">
+      <h2 className="news-title">{article.fields.title}</h2>
+    </div>
+  </NavLink>
+))}
+
       </div>
     </ArticlesStyled>
   );
