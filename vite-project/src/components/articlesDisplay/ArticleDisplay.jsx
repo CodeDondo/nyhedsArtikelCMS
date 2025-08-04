@@ -25,12 +25,12 @@ const Article = () => {
     {article.fields.image?.fields?.file?.url && (
       <img
         src={article.fields.image.fields.file.url}
-        alt={article.fields.title}
+        alt={article.fields.titel}
         className="news-image"
       />
     )}
     <div className="news-content">
-      <h2 className="news-title">{article.fields.title}</h2>
+      <h2 className="news-title">{article.fields.titel}</h2>
     </div>
   </NavLink>
 ))}
